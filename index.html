@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuis Interaktif ICT Chapter 3: New Trends in IT</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .selected-pairing {
+            border-color: #3b82f6 !important;
+            background-color: #eff6ff !important;
+        }
+        .matched-pairing {
+            border-color: #10b981 !important;
+            background-color: #ecfdf5 !important;
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 font-sans pb-12">
+
+    <!-- Header / Navbar -->
+    <header class="bg-indigo-700 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div>
+                <h1 class="text-xl md:text-2xl font-bold">ICT Quiz: New Trends in IT</h1>
+                <p class="text-xs md:text-sm text-indigo-200">Chapter 3 - Kelas 7 Secondary</p>
+            </div>
+            <div id="timer" class="bg-indigo-800 px-3 py-1.5 rounded-lg text-sm font-semibold tracking-wide">
+                Waktu: <span id="time-display">00:00</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-4xl mx-auto px-4 mt-6">
+
+        <!-- Student Info Card -->
+        <div id="student-info-card" class="bg-white p-6 rounded-xl shadow-md mb-6 border border-slate-200">
+            <h2 class="text-lg font-bold text-slate-700 mb-4 border-b pb-2">Informasi Siswa</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-1">Nama Lengkap</label>
+                    <input type="text" id="student-name" placeholder="Masukkan nama..." class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-1">Kelas / No. Absen</label>
+                    <input type="text" id="student-class" placeholder="Contoh: 7A / 12" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 1: Pilihan Ganda -->
+        <div class="mb-8">
+            <h2 class="text-xl font-bold text-indigo-900 bg-indigo-100 p-3 rounded-lg mb-4 border-l-4 border-indigo-600">
+                Bagian A: Pilihan Ganda (30 Soal)
+            </h2>
+            <div id="mcq-container" class="space-y-6"></div>
+        </div>
+
+        <!-- Section 2: True / False -->
+        <div class="mb-8">
+            <h2 class="text-xl font-bold text-indigo-900 bg-indigo-100 p-3 rounded-lg mb-4 border-l-4 border-indigo-600">
+                Bagian B: Benar / Salah (5 Soal)
+            </h2>
+            <div id="tf-container" class="space-y-6"></div>
+        </div>
+
+        <!-- Section 3: Pairing / Matching -->
+        <div class="mb-8">
+            <h2 class="text-xl font-bold text-indigo-900 bg-indigo-100 p-3 rounded-lg mb-4 border-l-4 border-indigo-600">
+                Bagian C: Menjodohkan / Pairing (5 Soal)
+            </h2>
+            <p class="text-sm text-slate-600 mb-4 italic">Petunjuk: Klik item di Kolom A, lalu klik pasangannya yang sesuai di Kolom B.</p>
+            <div id="pairing-container" class="bg-white p-6 rounded-xl shadow-md border border-slate-200">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="font-semibold text-slate-700 mb-3 text-center bg-slate-100 py-1 rounded">Kolom A (Istilah)</h3>
+                        <div id="pairing-left" class="space-y-3"></div>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-slate-700 mb-3 text-center bg-slate-100 py-1 rounded">Kolom B (Deskripsi / Deskripsi Fungsi)</h3>
+                        <div id="pairing-right" class="space-y-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="text-center my-8">
+            <button onclick="submitQuiz()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-lg font-bold py-3 px-8 rounded-xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-0.5">
+                Kirim & Lihat Hasil
+            </button>
+        </div>
+
+        <!-- Result Modal / Card -->
+        <div id="result-card" class="hidden bg-white p-8 rounded-xl shadow-2xl border-2 border-indigo-500 mb-12">
+            <h2 class="text-2xl font-bold text-center text-indigo-900 mb-2">Hasil Kuis Anda</h2>
+            <p id="result-student-info" class="text-center text-slate-600 mb-6"></p>
+            
+            <div class="flex justify-center items-center mb-6">
+                <div class="text-center bg-indigo-50 p-6 rounded-full border-4 border-indigo-600 w-40 h-40 flex flex-col justify-center items-center">
+                    <span id="final-score" class="text-4xl font-extrabold text-indigo-700">0</span>
+                    <span class="text-xs text-slate-500 font-semibold">DARI 100</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center mb-6">
+                <div class="bg-slate-50 p-3 rounded-lg border">
+                    <p class="text-xs text-slate-500">Pilihan Ganda</p>
+                    <p id="mcq-score-detail" class="text-lg font-bold text-slate-700">0 / 30</p>
+                </div>
+                <div class="bg-slate-50 p-3 rounded-lg border">
+                    <p class="text-xs text-slate-500">Benar / Salah</p>
+                    <p id="tf-score-detail" class="text-lg font-bold text-slate-700">0 / 5</p>
+                </div>
+                <div class="bg-slate-50 p-3 rounded-lg border">
+                    <p class="text-xs text-slate-500">Menjodohkan</p>
+                    <p id="pairing-score-detail" class="text-lg font-bold text-slate-700">0 / 5</p>
+                </div>
+            </div>
+
+            <div class="text-center">
+                <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="bg-slate-800 hover:bg-slate-900 text-white font-medium py-2 px-6 rounded-lg">
+                    Kembali ke Atas
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // Data Soal Pilihan Ganda (30 Soal)
+        const mcqData = [
+            { id: 1, q: "Apa nama lain dari USB Drive?", options: ["Flash drive", "Hard Disk", "Optical Drive", "RAM Card"], ans: 0 },
+            { id: 2, q: "Kapasitas memori USB Drive biasanya berkisar antara 8 MB hingga...", options: ["16 GB", "32 GB", "64 GB", "128 GB"], ans: 2 },
+            { id: 3, q: "Di manakah kantor pusat Apple Inc. berlokasi?", options: ["Seattle, Washington", "Cupertino, California", "New York", "San Francisco"], ans: 1 },
+            { id: 4, q: "Siapakah CEO Apple yang mengumumkan iPhone generasi pertama pada 9 Januari 2007?", options: ["Steve Wozniak", "Eric Schmidt", "Steve Jobs", "Larry Page"], ans: 2 },
+            { id: 5, q: "Sistem operasi seluler yang digunakan pada perangkat iPhone adalah...", options: ["Android", "iOS", "Windows Phone", "Symbian"], ans: 1 },
+            { id: 6, q: "Siapakah organisasi/aliansi yang memiliki platform Android?", options: ["Open Handset Alliance", "Apple Inc", "Microsoft Corporation", "Google Developer Alliance"], ans: 0 },
+            { id: 7, q: "Pada tahun berapa Google resmi membeli Android, Inc.?", options: ["2003", "2005", "2007", "2008"], ans: 1 },
+            { id: 8, q: "Apa nama kode versi Android 1.5 yang dirilis pada tahun 2009?", options: ["Donut", "Eclair", "Cupcake", "Froyo"], ans: 2 },
+            { id: 9, q: "Ponsel G1 yang dirilis tahun 2008 diproduksi oleh perusahaan manufaktur...", options: ["Samsung", "HTC", "Nokia", "Motorola"], ans: 1 },
+            { id: 10, q: "Android versi 2.2 yang dirilis pada tahun 2010 dikenal dengan nama kode...", options: ["Froyo", "Gingerbread", "Honeycomb", "Ice Cream Sandwich"], ans: 0 },
+            { id: 11, q: "Perangkat pemindai dengan tampilan optik di kepala (head-mounted display) buatan Google yang dirilis terbatas tahun 2013 adalah...", options: ["Google Watch", "Google Earth", "Google Glass", "Google TV"], ans: 2 },
+            { id: 12, q: "File multimedia yang didistribusikan melalui Internet untuk diputar di perangkat seluler atau PC disebut...", options: ["Wiki", "Podcast", "Blog", "Webinar"], ans: 1 },
+            { id: 13, q: "Fitur utama yang membedakan podcast dari format audio digital biasa adalah...", options: ["Hanya bisa diputar di PC", "Dapat diunduh otomatis menggunakan format feed seperti RSS", "Tidak memiliki suara", "Hanya bisa diakses secara berbayar"], ans: 1 },
+            { id: 14, q: "Siapakah sebutan bagi pembuat atau host dari sebuah podcast?", options: ["Webmaster", "Podcaster", "Blogger", "Broadcaster"], ans: 1 },
+            { id: 15, q: "Layanan penyiaran TV pada ponsel pintar umumnya didasarkan pada teknologi...", options: ["DMB (Digital Multimedia Broadcasting)", "SMS (Short Message Service)", "HTTP Protocol", "Bluetooth"], ans: 0 },
+            { id: 16, q: "Konsep pemanfaatan energi dari lingkungan seperti cahaya, panas, atau gerakan untuk mengisi daya perangkat dinamakan...", options: ["Energy-harvesting", "Solar-storing", "Battery-boosting", "Kinetic-charging"], ans: 0 },
+            { id: 17, q: "Jenis situs web interaktif yang memungkinkan penggunanya untuk menambah, menghapus, atau mengedit konten secara langsung adalah...", options: ["Podcast", "Wiki", "Blog Spot", "Search Engine"], ans: 1 },
+            { id: 18, q: "Bahasa standar yang digunakan untuk membuat halaman web (yang tidak wajib dikuasai untuk mengedit Wiki) adalah...", options: ["C++", "Python", "HTML", "Java"], ans: 2 },
+            { id: 19, q: "Siapakah pembuat situs Wiki pertama yang diinstal pada tahun 1995?", options: ["Ward Cunningham", "Larry Page", "Steve Jobs", "Sergey Brin"], ans: 0 },
+            { id: 20, q: "Nama 'Wiki' diambil dari jalur bus 'Wiki Wiki' yang berada di bandara kota...", options: ["Tokyo", "Honolulu", "Los Angeles", "Chicago"], ans: 1 },
+            { id: 21, q: "Sebelum dikenal dengan nama Wiki, platform situs web tersebut awalnya dinamakan...", options: ["Quickweb", "FastNet", "HyperText", "EasyPage"], ans: 0 },
+            { id: 22, q: "Sebelum berganti nama menjadi Google Earth, program bola dunia virtual tersebut dinamakan...", options: ["Globe Viewer", "Earth Viewer", "World Map", "Satellite View"], ans: 1 },
+            { id: 23, q: "Google Earth memetakan bumi dengan menumpuk gambar yang diperoleh dari...", options: ["Foto kamera hp", "Satelit dan fotografi udara", "Peta lukisan", "Layanan Google Maps biasa"], ans: 1 },
+            { id: 24, q: "Kritik utama dari beberapa pejabat nasional terhadap Google Earth adalah terkait isu...", options: ["Harga langganan mahal", "Infiltrasi virus komputer", "Invasi privasi dan ancaman keamanan nasional", "Ukuran aplikasi terlalu besar"], ans: 2 },
+            { id: 25, q: "Layar berwarna hijau yang digunakan dalam pembuatan film untuk menggabungkan latar belakang buatan bernama...", options: ["Blue screen", "Green screen", "Black screen", "White screen"], ans: 1 },
+            { id: 26, q: "Perangkat USB flash drive terhubung ke komputer melalui colokan...", options: ["HDMI Port", "VGA Port", "USB Port", "Audio Jack"], ans: 2 },
+            { id: 27, q: "Mengapa USB flash drive dianggap lebih unggul dibandingkan disket (floppy disk)?", options: ["Lebih lambat dan kecil", "Lebih cepat, kapasitas lebih besar, dan lebih andal", "Bisa memutar lagu tanpa komputer", "Harganya mahal"], ans: 1 },
+            { id: 28, q: "Perangkat wearable yang termasuk dalam portofolio produk Apple adalah...", options: ["Apple Watch", "Apple Mac", "Apple TV", "iPad"], ans: 0 },
+            { id: 29, q: "Google TV yang dirilis tahun 2012 didukung oleh OS Android dan berjalan pada chip...", options: ["ARM x64", "Intel x86", "Apple M1", "Snapdragon"], ans: 1 },
+            { id: 30, q: "Gerakan pergelangan tangan pengguna dapat menghasilkan sumber aliran panas yang diteliti ilmuwan untuk memicu energi pada perangkat seluler. Ini memanfaatkan konsep...", options: ["Micro power engineering", "Thermal Cooling", "Solar Radiation", "Magnetic Waves"], ans: 0 }
+        ];
+
+        // Data Soal True / False (5 Soal)
+        const tfData = [
+            { id: 1, q: "USB Flash Drive umumnya bekerja dengan metode Plug and Play sehingga tidak membutuhkan perangkat lunak tambahan.", ans: true },
+            { id: 2, q: "Hingga November 2018, Apple telah menjual lebih dari 2.2 miliar unit iPhone.", ans: true },
+            { id: 3, q: "Android adalah platform tertutup (closed-source) yang hanya bisa berjalan pada satu merk perangkat keras saja.", ans: false },
+            { id: 4, q: "Konten dalam Wiki dijamin 100% selalu akurat dan tidak mungkin berisi informasi yang menyesatkan.", ans: false },
+            { id: 5, q: "Sistem pendukung pembuatan film modern memungkinkan pengeditan suara dilakukan secara digital tanpa cela.", ans: true }
+        ];
+
+        // Data Soal Pairing (5 Soal)
+        const pairingLeftData = [
+            { id: "P1", text: "1. USB Flash Drive" },
+            { id: "P2", text: "2. Podcast" },
+            { id: "P3", text: "3. Wiki" },
+            { id: "P4", text: "4. Google Earth" },
+            { id: "P5", text: "5. Energy Harvesting" }
+        ];
+
+        const pairingRightData = [
+            { id: "M3", text: "A. Situs web interaktif yang kontennya dapat diedit oleh pengguna secara langsung." },
+            { id: "M1", text: "B. Media penyimpanan portabel yang dipasang ke port USB." },
+            { id: "M5", text: "C. Proses memanfaatkan daya dari sumber panas, cahaya, atau gerakan lingkungan." },
+            { id: "M2", text: "D. Berkas audio/multimedia yang didistribusikan secara otomatis melalui format RSS." },
+            { id: "M4", text: "E. Program globe virtual 3D yang menampilkan citra satelit bumi." }
+        ];
+
+        // Pemetaan Jawaban Benar Pairing: Left ID -> Right ID
+        const pairingAnswers = {
+            "P1": "M1",
+            "P2": "M2",
+            "P3": "M3",
+            "P4": "M4",
+            "P5": "M5"
+        };
+
+        // Student's Pairing selections
+        let selectedLeft = null;
+        let userPairings = {}; // leftId -> rightId
+
+        // Timer
+        let secondsElapsed = 0;
+        setInterval(() => {
+            secondsElapsed++;
+            const mins = Math.floor(secondsElapsed / 60).toString().padStart(2, '0');
+            const secs = (secondsElapsed % 60).toString().padStart(2, '0');
+            document.getElementById('time-display').innerText = `${mins}:${secs}`;
+        }, 1000);
+
+        // Render MCQ
+        function renderMCQ() {
+            const container = document.getElementById('mcq-container');
+            mcqData.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'bg-white p-5 rounded-xl shadow-sm border border-slate-200';
+                
+                let optionsHTML = '';
+                item.options.forEach((opt, optIndex) => {
+                    optionsHTML += `
+                        <label class="flex items-center p-3 rounded-lg border border-slate-100 hover:bg-indigo-50/50 cursor-pointer transition">
+                            <input type="radio" name="mcq-${item.id}" value="${optIndex}" class="w-4 h-4 text-indigo-600 focus:ring-indigo-500">
+                            <span class="ml-3 text-sm text-slate-700">${opt}</span>
+                        </label>
+                    `;
+                });
+
+                card.innerHTML = `
+                    <p class="font-semibold text-slate-800 mb-3"><span class="text-indigo-600 mr-1">${index + 1}.</span> ${item.q}</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">${optionsHTML}</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Render True / False
+        function renderTF() {
+            const container = document.getElementById('tf-container');
+            tfData.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'bg-white p-5 rounded-xl shadow-sm border border-slate-200';
+                
+                card.innerHTML = `
+                    <p class="font-semibold text-slate-800 mb-3"><span class="text-indigo-600 mr-1">${index + 1}.</span> ${item.q}</p>
+                    <div class="flex gap-4">
+                        <label class="flex-1 flex items-center justify-center p-3 rounded-lg border border-slate-200 hover:bg-emerald-50 cursor-pointer">
+                            <input type="radio" name="tf-${item.id}" value="true" class="w-4 h-4 text-emerald-600">
+                            <span class="ml-2 text-sm font-medium text-emerald-700">BENAR (TRUE)</span>
+                        </label>
+                        <label class="flex-1 flex items-center justify-center p-3 rounded-lg border border-slate-200 hover:bg-rose-50 cursor-pointer">
+                            <input type="radio" name="tf-${item.id}" value="false" class="w-4 h-4 text-rose-600">
+                            <span class="ml-2 text-sm font-medium text-rose-700">SALAH (FALSE)</span>
+                        </label>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Render Pairing
+        function renderPairing() {
+            const leftContainer = document.getElementById('pairing-left');
+            const rightContainer = document.getElementById('pairing-right');
+
+            pairingLeftData.forEach(item => {
+                const btn = document.createElement('button');
+                btn.id = `left-${item.id}`;
+                btn.className = 'w-full text-left p-3 text-sm rounded-lg border border-slate-200 bg-white hover:border-indigo-400 transition flex justify-between items-center';
+                btn.onclick = () => selectLeftPair(item.id);
+                btn.innerHTML = `<span>${item.text}</span> <span id="badge-${item.id}" class="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded hidden"></span>`;
+                leftContainer.appendChild(btn);
+            });
+
+            pairingRightData.forEach(item => {
+                const btn = document.createElement('button');
+                btn.id = `right-${item.id}`;
+                btn.className = 'w-full text-left p-3 text-sm rounded-lg border border-slate-200 bg-white hover:border-indigo-400 transition';
+                btn.onclick = () => selectRightPair(item.id);
+                btn.innerText = item.text;
+                rightContainer.appendChild(btn);
+            });
+        }
+
+        function selectLeftPair(id) {
+            // Unselect previous left if any
+            if (selectedLeft) {
+                const prevBtn = document.getElementById(`left-${selectedLeft}`);
+                if (!userPairings[selectedLeft]) {
+                    prevBtn.classList.remove('selected-pairing');
+                }
+            }
+            selectedLeft = id;
+            const currentBtn = document.getElementById(`left-${id}`);
+            currentBtn.classList.add('selected-pairing');
+        }
+
+        function selectRightPair(rightId) {
+            if (!selectedLeft) {
+                alert("Silakan pilih soal di Kolom A terlebih dahulu.");
+                return;
+            }
+
+            // Remove previous link if rightId was already assigned
+            Object.keys(userPairings).forEach(key => {
+                if (userPairings[key] === rightId) {
+                    delete userPairings[key];
+                    document.getElementById(`badge-${key}`).classList.add('hidden');
+                    document.getElementById(`left-${key}`).classList.remove('matched-pairing');
+                }
+            });
+
+            // Assign pairing
+            userPairings[selectedLeft] = rightId;
+
+            // UI feedback
+            const leftBtn = document.getElementById(`left-${selectedLeft}`);
+            const badge = document.getElementById(`badge-${selectedLeft}`);
+            const rightLetter = pairingRightData.find(r => r.id === rightId).text.substring(0, 1);
+            
+            badge.innerText = `Terhubung ke (${rightLetter})`;
+            badge.classList.remove('hidden');
+            leftBtn.classList.remove('selected-pairing');
+            leftBtn.classList.add('matched-pairing');
+
+            selectedLeft = null;
+        }
+
+        // Submit Quiz
+        function submitQuiz() {
+            const name = document.getElementById('student-name').value.trim();
+            const studentClass = document.getElementById('student-class').value.trim();
+
+            if (!name || !studentClass) {
+                alert("Mohon isi Nama dan Kelas terlebih dahulu!");
+                window.scrollTo({top: 0, behavior: 'smooth'});
+                return;
+            }
+
+            // Calculate MCQ Score
+            let mcqCorrect = 0;
+            mcqData.forEach(item => {
+                const selected = document.querySelector(`input[name="mcq-${item.id}"]:checked`);
+                if (selected && parseInt(selected.value) === item.ans) {
+                    mcqCorrect++;
+                }
+            });
+
+            // Calculate TF Score
+            let tfCorrect = 0;
+            tfData.forEach(item => {
+                const selected = document.querySelector(`input[name="tf-${item.id}"]:checked`);
+                if (selected && (selected.value === 'true') === item.ans) {
+                    tfCorrect++;
+                }
+            });
+
+            // Calculate Pairing Score
+            let pairingCorrect = 0;
+            Object.keys(pairingAnswers).forEach(leftId => {
+                if (userPairings[leftId] === pairingAnswers[leftId]) {
+                    pairingCorrect++;
+                }
+            });
+
+            // Final Calculation (Total 40 Soal -> Scale to 100)
+            const totalCorrect = mcqCorrect + tfCorrect + pairingCorrect;
+            const finalScore = Math.round((totalCorrect / 40) * 100);
+
+            // Display Results
+            document.getElementById('result-student-info').innerText = `Nama: ${name} | Kelas: ${studentClass}`;
+            document.getElementById('final-score').innerText = finalScore;
+            document.getElementById('mcq-score-detail').innerText = `${mcqCorrect} / 30`;
+            document.getElementById('tf-score-detail').innerText = `${tfCorrect} / 5`;
+            document.getElementById('pairing-score-detail').innerText = `${pairingCorrect} / 5`;
+
+            const resultCard = document.getElementById('result-card');
+            resultCard.classList.remove('hidden');
+            resultCard.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Init App
+        window.onload = () => {
+            renderMCQ();
+            renderTF();
+            renderPairing();
+        };
+    </script>
+</body>
+</html>
+```eof
+
+### Ringkasan & Petunjuk Penggunaan Kuis:
+
+1. **Rincian Soal (Total 40 Soal):**
+   - **30 Soal Pilihan Ganda (MCQ):** Menguji pemahaman mendalam tentang sejarah Android, lini produk Apple, fitur Podcast, Wiki, Google Earth, USB Drive, *Energy-harvesting*, dan teknologi pembuatan film.
+   - **5 Soal Benar/Salah (True/False):** Menguji fakta-fakta spesifik dari modul.
+   - **5 Soal Menjodohkan (Pairing):** Menghubungkan istilah tren IT terkini dengan deskripsi fungsinya secara interaktif.
+
+2. **Cara Membagikan ke Siswa:**
+   - Simpan kode file di atas menjadi sebuah file berakhiran `.html` (contoh: `Kuis_ICT_Chapter3.html`).
+   - Anda bisa langsung membagikan file tersebut atau mengunggahnya ke layanan seperti Google Drive, GitHub Pages, Netlify, atau LMS sekolah Anda agar siswa cukup mengklik tautannya.
+   - Aplikasi kuis ini berjalan sepenuhnya di *browser* (tanpa butuh *server* khusus/instalasi tambahan) dan sudah responsif di perangkat *smartphone*, tablet, maupun komputer.
+
+Semoga kuis ini bermanfaat untuk membantu pembelajaran siswa!
